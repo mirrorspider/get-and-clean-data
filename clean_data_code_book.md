@@ -35,7 +35,11 @@ The files produced by this transformation are:
     * subject - subject ID associated with the activity.
     * for a discussion of the features data please refer to the features_info.txt file of the original data set.
       (All names in this data set are in lower case and have add "." characters removed)
----
-title| "Clean Data Code Book"
-author| "Alex Robinson"
-date| "9 December 2016"
+
+***
+      
+| Property | Value |
+| --- | --- |
+| title | "Clean Data Code Book"|
+| author | "Alex Robinson"|
+| date | "9 December 2016"|
