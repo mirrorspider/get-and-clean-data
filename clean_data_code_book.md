@@ -40,6 +40,6 @@ The files produced by this transformation are:
       
 | Property | Value |
 | --- | --- |
-| title | "Clean Data Code Book"|
-| author | "Alex Robinson"|
-| date | "9 December 2016"|
+| title | Clean Data Code Book |
+| author | Alex Robinson |
+| date | 9 December 2016 |
