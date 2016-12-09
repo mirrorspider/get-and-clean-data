@@ -4,17 +4,32 @@ if (!require(dplyr)){
         stop("The dplyr package is required to run this .R file")
 }
 
+DetermineBaseDirectory <- function(){
+        
+        if(file.exists("./UCI HAR Dataset.zip") | dir.exists("./UCI HAR Dataset")){
+                base.dir <- "."
+        }
+        else {
+                base.dir <- "./data"
+        }
+        
+        base.dir
+}
+
 GetData <- function(base.dir){
         if (!dir.exists(base.dir)) {
                 dir.create(base.dir)
                 message(paste(base.dir, "directory created"))
         }
         if (!dir.exists(paste0(base.dir,"/UCI HAR Dataset"))) {
-                zip.url <- "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
-                data.file <- paste0(base.dir, "/UCIHAR.zip")
-                download.file(zip.url, data.file)
+                data.file <- paste0(base.dir, "/UCI HAR Dataset.zip")
+                if (!file.exists(data.file)){
+                        zip.url <- "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
+                        download.file(zip.url, data.file)
+                        message("UCI HAR Data set downloaded")
+                }
                 unzip(data.file, exdir = base.dir)
-                message("UCI HAR Dataset imported")
+                message("UCI HAR Dataset unzipped")
         }
         data.dir <- paste0(base.dir, "/UCI HAR Dataset/")
         data.dir
@@ -92,30 +107,37 @@ CombineTestSets <- function(data.dir, features.frame, labels.frame){
 
 ProduceSummaryData <- function(data.set){
         tbl.data.set <- as.tbl(data.set)
-        grp.cols <- c("subject", "activity")
+        grp.cols <- c("activity", "subject")
         dots <- lapply(grp.cols, as.symbol)
         ds <- group_by_(tbl.data.set, .dots = dots) %>% summarise_each(funs(mean))
         ds <- as.data.frame(ds)
 }
 
-WriteOutputFile <- function(base.dir, out.file.name, data.set){
+WriteOutputFile <- function(base.dir, out.file.name, data.set, csv){
         output.dir <- paste0(base.dir, "/output")
         if (!dir.exists(output.dir)){
                 dir.create(output.dir)
         }
         output.file <- paste0(output.dir, "/", out.file.name)
-        write.csv(data.set, file = output.file, quote = FALSE, row.names = FALSE)
+        if (csv) {
+                output.file <- paste0(output.file, ".csv")
+                write.csv(data.set, file = output.file, quote = FALSE, row.names = FALSE)
+        }
+        else {
+                output.file <- paste0(output.file, ".txt")
+                write.table(data.set, file = output.file, quote = FALSE, row.names = FALSE)
+        }
 }
 
 Main <- function(){
-        base.dir <- "./data"
+        base.dir <- DetermineBaseDirectory()
         data.dir <- GetData(base.dir)
         labels.frame <- ReadLabels(data.dir, "activity_labels.txt")
         features.frame <- ReadLabels(data.dir, "features.txt")
         combined.har.data <<- CombineTestSets(data.dir, features.frame, labels.frame)
         summary.har.data <<- ProduceSummaryData(combined.har.data)
-        WriteOutputFile(base.dir, "uci_har_mean_std.csv", combined.har.data)
-        WriteOutputFile(base.dir, "summary_uci_har.csv", summary.har.data)
+        WriteOutputFile(base.dir, "uci_har_mean_std", combined.har.data, csv = FALSE)
+        WriteOutputFile(base.dir, "summary_uci_har", summary.har.data, csv = FALSE)
 }
 
 Main()
