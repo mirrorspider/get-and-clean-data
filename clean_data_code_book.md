@@ -12,19 +12,30 @@ To produce the current data set, the following steps were taken:
 * The names of the features were tidied to lowercase and to remove "."" characters
 * The feature subset was combined with the corresponding activity (\<set\>/y_\<set\>.txt) and subject (\<set\>/subject_\<test\>.txt) information.
 * The activity numeric values 1-6 were replaced with natural langauge labels in line with the information in activity_labels.txt
-    + 1\. walking
-    + 2\. walkingupstairs
-    + 3\. walkingdownstairs
-    + 4\. sitting
-    + 5\. standing
-    + 6\. laying
+    + 1\: walking
+    + 2\: walkingupstairs
+    + 3\: walkingdownstairs
+    + 4\: sitting
+    + 5\: standing
+    + 6\: laying
 * The two data sets were combined and written to output/uci_har_mean_std.txt (and also stored in the data.frame variable combined.har.data)
 * A summary of the data was produced with the mean for each feature grouped by activity and subject recorded. This is written to the output/summary_uci_har.txt file (and stored in the data.frame variable summary.har.data)
 
-
 ## Files
+The files produced by this transformation are:
+* output/uci_har_mean_std.txt
+    This includes the activity, the subject, plus all the feature values from the original data set which feature mean or standard deviation (std) data.
+    * activity - 1 of 6 activities during which the telemetry was collected. 
+    * subject - subject ID associated with the activity.
+    * for a discussion of the features data please refer to the features_info.txt file of the original data set.
+      (All names in this data set are in lower case and have add "." characters removed)
+* output/summary_uci_har.txt
+   This includes the mean value of feature measurements when grouped by subject and activity
+    * activity - 1 of 6 activities during which the telemetry was collected. 
+    * subject - subject ID associated with the activity.
+    * for a discussion of the features data please refer to the features_info.txt file of the original data set.
+      (All names in this data set are in lower case and have add "." characters removed)
 ---
-title: "Clean Data Code Book"
-author: "Alex Robinson"
-date: "9 December 2016"
----
+title| "Clean Data Code Book"
+author| "Alex Robinson"
+date| "9 December 2016"
