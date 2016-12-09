@@ -1,105 +1,121 @@
 # Header information
 
-get_data <- function(basedir){
-        if (!dir.exists(basedir)) {
-                dir.create(basedir)
-                message(paste(basedir, "directory created"))
+if (!require(dplyr)){
+        stop("The dplyr package is required to run this .R file")
+}
+
+GetData <- function(base.dir){
+        if (!dir.exists(base.dir)) {
+                dir.create(base.dir)
+                message(paste(base.dir, "directory created"))
         }
-        if (!dir.exists(paste0(basedir,"/UCI HAR Dataset"))) {
-                zipurl <- "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
-                datafile <- paste0(basedir, "/UCIHAR.zip")
-                download.file(zipurl, datafile)
-                unzip(datafile, exdir = basedir)
+        if (!dir.exists(paste0(base.dir,"/UCI HAR Dataset"))) {
+                zip.url <- "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
+                data.file <- paste0(base.dir, "/UCIHAR.zip")
+                download.file(zip.url, data.file)
+                unzip(data.file, exdir = base.dir)
                 message("UCI HAR Dataset imported")
         }
-        datadir <- paste0(basedir, "/UCI HAR Dataset/")
-        datadir
+        data.dir <- paste0(base.dir, "/UCI HAR Dataset/")
+        data.dir
 }
 
-read_labels <- function(datadir){
-        labelfile <- paste0(datadir, "activity_labels.txt")
-        featurefile <- paste0(datadir, "features.txt")
-        
-        labelsframe <- read.table(labelfile, col.names = c("key", "value"))
-        featuresframe <- read.table(featurefile, col.names = c("key", "value"))
-        
-        output <- list(labelsframe, featuresframe)
+ReadLabels <- function(data.dir, label.file.name){
+        label.file <- paste0(data.dir, label.file.name)
+        labels.frame <- read.table(label.file, col.names = c("key", "value"))
+        labels.frame
+}
+
+ExtractColumns <- function(telemetry){
+        column.pattern <- "(std|mean)"
+        output <- telemetry[, grep(column.pattern, colnames(telemetry), value = TRUE)]
         output
         
 }
 
-extract_req_columns <- function(telemetry){
-        colpattern <- "(std|mean)"
-        output <- telemetry[, grep(colpattern, colnames(telemetry), value = TRUE)]
-        output
-        
-}
-
-format_heading <- function(colheading){
-        output <- tolower(colheading)
+FormatHeading <- function(column.heading){
+        output <- tolower(column.heading)
         output <- gsub("\\.", "", output)
         output
 }
 
-format_all_headings <- function(colheadings){
-        output <- sapply(colheadings, format_heading, simplify = TRUE, USE.NAMES = FALSE)
+FormatAllHeadings <- function(column.headings){
+        output <- sapply(column.headings, FormatHeading, simplify = TRUE, USE.NAMES = FALSE)
         output
 }
 
-format_activity_label <- function(labelsframe, value_to_format){
-        output <- labelsframe[value_to_format,"value"]
+FormatActivityLabel <- function(labels.frame, value.to.format){
+        output <- labels.frame[value.to.format,"value"]
         output <- tolower(output)
         output <- gsub("_", "", output)
         output
 }
 
-format_all_activity_labels <- function(labelsframe, frame_to_format){
-        output <- sapply(frame_to_format, FUN = function(x){ y <- format_activity_label(labelsframe, x); y})
+FormatAllActivityLabels <- function(labels.frame, frame.to.format){
+        output <- sapply(frame.to.format, FUN = function(x){ y <- FormatActivityLabel(labels.frame, x); y})
         output
 }
 
-read_test_set <- function(datadir, featuresframe, labelsframe, testset){
-        testsetdir <- paste0(datadir, testset, "/")
-        if (!dir.exists(testsetdir)){
+ReadTestSet <- function(data.dir, features.frame, labels.frame, test.set){
+        test.set.dir <- paste0(data.dir, test.set, "/")
+        if (!dir.exists(test.set.dir)){
                 stop("No such test set")
         }
-        activitiesfile <- paste0(testsetdir, "y_", testset, ".txt")
-        subjectsfile <- paste0(testsetdir, "subject_", testset, ".txt")
-        telemetryfile <- paste0(testsetdir, "X_", testset, ".txt")
+        activities.file <- paste0(test.set.dir, "y_", test.set, ".txt")
+        subjects.file <- paste0(test.set.dir, "subject_", test.set, ".txt")
+        telemetry.file <- paste0(test.set.dir, "X_", test.set, ".txt")
         
-        activitiesframe <- read.table(activitiesfile, col.names = c("activity"))
-        subjectsframe <- read.table(subjectsfile, col.names = c("subject"))
-        telemetryframe <- read.table(telemetryfile, col.names = featuresframe$value)
+        activities.frame <- read.table(activities.file, col.names = c("activity"))
+        subjects.frame <- read.table(subjects.file, col.names = c("subject"))
+        telemetry.frame <- read.table(telemetry.file, col.names = features.frame$value)
         
-        telemetryframe <- extract_req_columns(telemetryframe)
+        telemetry.frame <- ExtractColumns(telemetry.frame)
         
-        colnames(telemetryframe) <- format_all_headings(colnames(telemetryframe))
+        colnames(telemetry.frame) <- FormatAllHeadings(colnames(telemetry.frame))
         
-        activitiesframe$activity <- format_all_activity_labels(labelsframe, activitiesframe$activity)
+        activities.frame$activity <- FormatAllActivityLabels(labels.frame, activities.frame$activity)
         
-        testsetframe <- data.frame(activitiesframe, subjectsframe, telemetryframe)
+        test.set.frame <- data.frame(activities.frame, subjects.frame, telemetry.frame)
         
-        testsetframe
+        test.set.frame
 }
 
-collate_test_sets <- function(datadir, featuresframe, labelsframe){
-        testframe <- read_test_set(datadir, featuresframe, labelsframe, "test")
-        trainframe <- read_test_set(datadir, featuresframe, labelsframe, "train")
+CombineTestSets <- function(data.dir, features.frame, labels.frame){
+        test.frame <- ReadTestSet(data.dir, features.frame, labels.frame, "test")
+        train.frame <- ReadTestSet(data.dir, features.frame, labels.frame, "train")
 
-        collatedframe <- merge(testframe, trainframe, all = TRUE)
+        collated.frame <- merge(test.frame, train.frame, all = TRUE)
 
-        collatedframe
+        collated.frame
         
 }
 
-main <- function(){
-        basedir <- "./data"
-        datadir <- get_data(basedir)
-        labellist <- read_labels(datadir)
-        labelsframe <- labellist[[1]]
-        featuresframe <- labellist[[2]]
-        cl <- collate_test_sets(datadir, featuresframe, labelsframe)
-        cl
+ProduceSummaryData <- function(data.set){
+        tbl.data.set <- as.tbl(data.set)
+        grp.cols <- c("subject", "activity")
+        dots <- lapply(grp.cols, as.symbol)
+        ds <- group_by_(tbl.data.set, .dots = dots) %>% summarise_each(funs(mean))
+        ds <- as.data.frame(ds)
 }
 
-dt <- main()
+WriteOutputFile <- function(base.dir, out.file.name, data.set){
+        output.dir <- paste0(base.dir, "/output")
+        if (!dir.exists(output.dir)){
+                dir.create(output.dir)
+        }
+        output.file <- paste0(output.dir, "/", out.file.name)
+        write.csv(data.set, file = output.file, quote = FALSE, row.names = FALSE)
+}
+
+Main <- function(){
+        base.dir <- "./data"
+        data.dir <- GetData(base.dir)
+        labels.frame <- ReadLabels(data.dir, "activity_labels.txt")
+        features.frame <- ReadLabels(data.dir, "features.txt")
+        combined.har.data <<- CombineTestSets(data.dir, features.frame, labels.frame)
+        summary.har.data <<- ProduceSummaryData(combined.har.data)
+        WriteOutputFile(base.dir, "uci_har_mean_std.csv", combined.har.data)
+        WriteOutputFile(base.dir, "summary_uci_har.csv", summary.har.data)
+}
+
+Main()
