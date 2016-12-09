@@ -28,13 +28,13 @@ The files produced by this transformation are:
     * activity - 1 of 6 activities during which the telemetry was collected. 
     * subject - subject ID associated with the activity.
     * for a discussion of the features data please refer to the features_info.txt file of the original data set.
-      (All names in this data set are in lower case and have add "." characters removed)
+          (All names in this data set are in lower case and have add "." characters removed)
 * output/summary_uci_har.txt
    This includes the mean value of feature measurements when grouped by subject and activity
     * activity - 1 of 6 activities during which the telemetry was collected. 
     * subject - subject ID associated with the activity.
     * for a discussion of the features data please refer to the features_info.txt file of the original data set.
-      (All names in this data set are in lower case and have add "." characters removed)
+          (All names in this data set are in lower case and have add "." characters removed)
 
 ***
       
